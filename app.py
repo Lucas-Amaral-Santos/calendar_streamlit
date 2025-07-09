@@ -48,6 +48,8 @@ uploaded = st.file_uploader(
 # Funções utilitárias
 # --------------------------------------------------
 
+
+
 def normalise_and_rename(df: pd.DataFrame) -> pd.DataFrame:
     """Converte nomes para minúsculo e mapeia PT‑BR → EN."""
     df.columns = df.columns.str.strip().str.lower()
@@ -69,9 +71,10 @@ if uploaded:
     # Ler arquivo
     # --------------------------------------------------
     if uploaded.name.lower().endswith(".csv"):
-        df = pd.read_csv(uploaded)
+        df = pd.read_csv(uploaded, sep=';')
     else:
         df = pd.read_excel(uploaded)
+
 
     df = normalise_and_rename(df)
 
@@ -87,10 +90,10 @@ if uploaded:
     # --------------------------------------------------
     # Processar datetime
     # --------------------------------------------------
-    df["start"] = pd.to_datetime(df["date"].astype(str) + " " + df["start_time"].astype(str), dayfirst=True, errors="coerce")
-    if df["start"].isna().any():
-        st.error("Não foi possível converter algumas linhas em data/hora. Verifique o formato.")
-        st.stop()
+    df["start"] = pd.to_datetime(df["date"].astype(str) + " " + df["start_time"].astype(str), errors="coerce")
+    # if df["start"].isna().any():
+    #     st.error("Não foi possível converter algumas linhas em data/hora. Verifique o formato.")
+    #     st.stop()
 
     duration_series = df.get("duração_minutos") or df.get("duracao_minutos")
     if duration_series is not None:
@@ -142,15 +145,32 @@ if uploaded:
             "right": "timeGridDay,timeGridWeek,dayGridMonth",
         },
         "slotMinTime": "06:00:00",
-        "slotMaxTime": "22:00:00",
+        "slotMaxTime": "18:00:00",
         "locale": "pt-br",
-        "height": "auto",
+        "editable": "true",
+        "navLinks": "true",
+        "selectable": "true",
+        
     }
 
     st.subheader("Visão de calendário")
     # Para forçar o componente a recarregar quando o filtro muda, use uma chave dependente da seleção
     cal_key = f"calendar_{hash(tuple(selected))}_{len(events)}"
-    calendar(events=events, options=options, key=cal_key)
+    state = calendar(events=events, options=options, key=cal_key, 
+                     custom_css="""
+            .fc-event-past {
+                opacity: 0.8;
+            }
+            .fc-event-time {
+                font-style: italic;
+            }
+            .fc-event-title {
+                font-weight: 700;
+            }
+            .fc-toolbar-title {
+                font-size: 2rem;
+            }
+            """)
     # calendar(events=events, options=options, key="calendar")
 
     st.subheader("Dados filtrados")
