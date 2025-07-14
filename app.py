@@ -16,12 +16,18 @@ import streamlit as st
 from streamlit_calendar import calendar
 from datetime import timedelta
 
+import logging
+# If you're curious of all the loggers
+
+
+print(st.logger._loggers)
+
 # --------------------------------------------------
 # Configuração da página
 # --------------------------------------------------
-st.set_page_config(page_title="Agenda de Consultas Médicas", layout="wide")
+st.set_page_config(page_title="Calendário de Agendamentos ARGUS", layout="wide")
 
-st.title("📅 Agenda de Consultas Médicas")
+st.title("📅 Calendário de Agendamento")
 
 with st.expander("🗂️ Formato mínimo esperado"):
     st.markdown(
@@ -34,6 +40,7 @@ with st.expander("🗂️ Formato mínimo esperado"):
         | `Profissional`    | `professional`       |
         | `Atendido`        | `patient`            |
         | `Observações`     | `description` (op.)  |
+        | `Falta`           | `falta`              |
         
         O horário de término será inferido a partir da duração padrão (30 min) ou de uma
         coluna `duração_minutos`, se presente.
@@ -60,6 +67,7 @@ def normalise_and_rename(df: pd.DataFrame) -> pd.DataFrame:
         "atendido": "patient",
         "observações": "description",
         "observacoes": "description",  # sem acento
+        "Falta": "falta",
     }
     df.rename(columns={k: v for k, v in rename_map.items() if k in df.columns}, inplace=True)
     return df
@@ -81,7 +89,7 @@ if uploaded:
     # --------------------------------------------------
     # Verificar colunas obrigatórias
     # --------------------------------------------------
-    required_cols = {"date", "start_time", "professional", "patient"}
+    required_cols = {"date", "start_time", "professional", "patient", "falta"}
     missing = required_cols - set(df.columns)
     if missing:
         st.error(f"Colunas ausentes: {', '.join(sorted(missing))}")
@@ -90,7 +98,7 @@ if uploaded:
     # --------------------------------------------------
     # Processar datetime
     # --------------------------------------------------
-    df["start"] = pd.to_datetime(df["date"].astype(str) + " " + df["start_time"].astype(str), errors="coerce")
+    df["start"] = pd.to_datetime(df["date"].astype(str) + " " + df["start_time"].astype(str)[:-2], errors="coerce")
     # if df["start"].isna().any():
     #     st.error("Não foi possível converter algumas linhas em data/hora. Verifique o formato.")
     #     st.stop()
@@ -108,6 +116,11 @@ if uploaded:
         axis=1,
     )
 
+    df['color'] = df['falta']
+
+    df['color'] = df["color"].replace('Presença', "#0C7A0C")
+    df['color'] = df["color"].replace('Falta', "#2A3B9E")
+
     # --------------------------------------------------
     # Filtro por profissional
     # --------------------------------------------------
@@ -117,6 +130,9 @@ if uploaded:
     )
     filtered = df[df["professional"].isin(selected)]
 
+    
+
+
     # --------------------------------------------------
     # Gerar lista de eventos para o calendário
     # --------------------------------------------------
@@ -125,10 +141,12 @@ if uploaded:
             "title": row["title"],
             "start": row["start"].isoformat(),
             "end": row["end"].isoformat(),
+            "backgroundColor": row["color"],
+            "borderColor": row["color"],
             "extendedProps": {
                 "professional": row["professional"],
                 "patient": row["patient"],
-                "description": row.get("description", ""),
+                "description": row["professional"],
             },
         }
         for _, row in filtered.iterrows()
@@ -175,5 +193,7 @@ if uploaded:
 
     st.subheader("Dados filtrados")
     st.dataframe(filtered, use_container_width=True)
+
+    st.write(state)
 else:
     st.info("Faça upload de um arquivo para começar.")
