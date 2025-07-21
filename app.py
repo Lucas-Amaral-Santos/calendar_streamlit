@@ -14,7 +14,7 @@ Requires: streamlit pandas streamlit-calendar
 import pandas as pd
 import streamlit as st
 from streamlit_calendar import calendar
-from datetime import timedelta
+from datetime import timedelta, datetime
 from pandas.api.types import (
     is_categorical_dtype,
     is_datetime64_any_dtype,
@@ -284,7 +284,7 @@ if uploaded:
 
     st.subheader("Visão de calendário")
     # Para forçar o componente a recarregar quando o filtro muda, use uma chave dependente da seleção
-    cal_key = f"calendar_{hash(tuple(selected_prof+selected_setor))}_{len(events)}"
+    cal_key = f"calendar_{hash(datetime.now())}_{len(events)}"
     state = calendar(events=events, options=options, key=cal_key, 
                      custom_css="""
             .fc-event-past {
