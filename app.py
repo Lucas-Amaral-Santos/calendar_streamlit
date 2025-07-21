@@ -284,7 +284,7 @@ if uploaded:
 
     st.subheader("Visão de calendário")
     # Para forçar o componente a recarregar quando o filtro muda, use uma chave dependente da seleção
-    cal_key = f"calendar_{hash(datetime.now())}_{len(events)}"
+    cal_key = f"calendar_{hash(len(events))}_{len(events)}"
     state = calendar(events=events, options=options, key=cal_key, 
                      custom_css="""
             .fc-event-past {
