@@ -124,7 +124,7 @@ if uploaded:
 
     df['color'] = df['tipo_falta']
 
-    df['color'] = df["color"].replace('Presença', "#0C7A0C")
+    df['color'] = df["color"].replace('Atendido', "#0C7A0C")
     df['color'] = df["color"].replace('Paciente', "#2A3B9E")
     df['color'] = df["color"].replace('Profissional', "#E70F0F")
 
