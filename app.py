@@ -72,7 +72,7 @@ def normalise_and_rename(df: pd.DataFrame) -> pd.DataFrame:
         "atendido": "patient",
         "observações": "description",
         "observacoes": "description",  # sem acento
-        "Falta": "falta",
+        "Tipo Falta": "falta",
     }
     df.rename(columns={k: v for k, v in rename_map.items() if k in df.columns}, inplace=True)
     return df
