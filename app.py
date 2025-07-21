@@ -240,7 +240,7 @@ if uploaded:
 
     
 
-    filtered = filter_dataframe(df)
+    filtered = filter_dataframe(df, 'Filtra Agendamentos')
 
 
 
