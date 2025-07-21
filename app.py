@@ -45,7 +45,7 @@ with st.expander("🗂️ Formato mínimo esperado"):
         | `Profissional`    | `professional`       |
         | `Atendido`        | `patient`            |
         | `Observações`     | `description` (op.)  |
-        | `Falta`           | `falta`              |
+        | `Tipo Falta`           | `falta`              |
         
         O horário de término será inferido a partir da duração padrão (30 min) ou de uma
         coluna `duração_minutos`, se presente.
@@ -72,7 +72,7 @@ def normalise_and_rename(df: pd.DataFrame) -> pd.DataFrame:
         "atendido": "patient",
         "observações": "description",
         "observacoes": "description",  # sem acento
-        "Tipo Falta": "falta",
+        "Tipo Falta": "tipo_falta",
     }
     df.rename(columns={k: v for k, v in rename_map.items() if k in df.columns}, inplace=True)
     return df
@@ -95,7 +95,7 @@ if uploaded:
     # --------------------------------------------------
     # Verificar colunas obrigatórias
     # --------------------------------------------------
-    required_cols = {"date", "start_time", "professional", "patient", "falta"}
+    required_cols = {"date", "start_time", "professional", "patient", "tipo_falta"}
     missing = required_cols - set(df.columns)
     if missing:
         st.error(f"Colunas ausentes: {', '.join(sorted(missing))}")
@@ -122,7 +122,7 @@ if uploaded:
         axis=1,
     )
 
-    df['color'] = df['falta']
+    df['color'] = df['tipo_falta']
 
     df['color'] = df["color"].replace('Presença', "#0C7A0C")
     df['color'] = df["color"].replace('Paciente', "#2A3B9E")
@@ -202,11 +202,11 @@ if uploaded:
     st.dataframe(filtered, use_container_width=True)
 
     try:
-        pacientes_ausentes = len(filtered[filtered['falta']=='Paciente'])/len(filtered)*100
+        pacientes_ausentes = len(filtered[filtered['tipo_falta']=='Paciente'])/len(filtered)*100
     except:
         pacientes_ausentes = 0
     try:
-        profissional_ausentes = len(filtered[filtered['falta']=='Profissional'])/len(filtered)*100
+        profissional_ausentes = len(filtered[filtered['tipo_falta']=='Profissional'])/len(filtered)*100
     except:
         profissional_ausentes = 0
 
