@@ -132,21 +132,23 @@ if uploaded:
     # --------------------------------------------------
     # Filtro por profissional
     # --------------------------------------------------
+
+
     professionals = sorted(df["professional"].dropna().unique())
-    selected = st.sidebar.multiselect(
+    selected_prof = st.sidebar.multiselect(
         "Filtrar por profissional", professionals, default=[]
     )
-    filtered = df[df["professional"].isin(selected)]
+    filtered = df[df["professional"].isin(selected_prof)]
 
     
     # --------------------------------------------------
     # Filtro por setor
     # --------------------------------------------------
     setor = sorted(df["setor"].dropna().unique())
-    selected = st.sidebar.multiselect(
+    selected_setor = st.sidebar.multiselect(
         "Filtrar por setor", setor, default=[]
     )
-    filtered = df[df["setor"].isin(selected)]
+    filtered = df[df["setor"].isin(selected_setor)]
 
 
 
