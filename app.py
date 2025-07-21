@@ -73,6 +73,7 @@ def normalise_and_rename(df: pd.DataFrame) -> pd.DataFrame:
         "observações": "description",
         "observacoes": "description",  # sem acento
         "tipo falta": "tipo_falta",
+        "setor": "setor",
     }
     df.rename(columns={k: v for k, v in rename_map.items() if k in df.columns}, inplace=True)
     return df
@@ -95,7 +96,7 @@ if uploaded:
     # --------------------------------------------------
     # Verificar colunas obrigatórias
     # --------------------------------------------------
-    required_cols = {"date", "start_time", "professional", "patient", "tipo_falta"}
+    required_cols = {"date", "start_time", "professional", "patient", "tipo_falta", "setor"}
     missing = required_cols - set(df.columns)
     if missing:
         st.error(f"Colunas ausentes: {', '.join(sorted(missing))}")
@@ -138,6 +139,15 @@ if uploaded:
     filtered = df[df["professional"].isin(selected)]
 
     
+    # --------------------------------------------------
+    # Filtro por setor
+    # --------------------------------------------------
+    professionals = sorted(df["setor"].dropna().unique())
+    selected = st.sidebar.multiselect(
+        "Filtrar por setor", professionals, default=[]
+    )
+    filtered = df[df["setor"].isin(selected)]
+
 
 
     # --------------------------------------------------
