@@ -18,9 +18,14 @@ from datetime import timedelta
 
 import logging
 # If you're curious of all the loggers
+from google.cloud import firestore
 
 
-print(st.logger._loggers)
+# Authenticate to Firestore with the JSON account key.
+db = firestore.Client.from_service_account_json('calendarargus-firestore-key.json')
+
+
+
 
 # --------------------------------------------------
 # Configuração da página
@@ -84,6 +89,7 @@ if uploaded:
         df = pd.read_excel(uploaded)
 
 
+
     df = normalise_and_rename(df)
 
     # --------------------------------------------------
@@ -119,14 +125,15 @@ if uploaded:
     df['color'] = df['falta']
 
     df['color'] = df["color"].replace('Presença', "#0C7A0C")
-    df['color'] = df["color"].replace('Falta', "#2A3B9E")
+    df['color'] = df["color"].replace('Paciente', "#2A3B9E")
+    df['color'] = df["color"].replace('Profissional', "#E70F0F")
 
     # --------------------------------------------------
     # Filtro por profissional
     # --------------------------------------------------
     professionals = sorted(df["professional"].dropna().unique())
     selected = st.sidebar.multiselect(
-        "Filtrar por profissional", professionals, default=professionals
+        "Filtrar por profissional", professionals, default=[]
     )
     filtered = df[df["professional"].isin(selected)]
 
@@ -193,6 +200,28 @@ if uploaded:
 
     st.subheader("Dados filtrados")
     st.dataframe(filtered, use_container_width=True)
+
+    try:
+        pacientes_ausentes = len(filtered[filtered['falta']=='Paciente'])/len(filtered)*100
+    except:
+        pacientes_ausentes = 0
+    try:
+        profissional_ausentes = len(filtered[filtered['falta']=='Profissional'])/len(filtered)*100
+    except:
+        profissional_ausentes = 0
+
+    st.markdown(f"# {round(pacientes_ausentes,2)}%\nfaltas de pacientes")
+    st.markdown(f"# {round(profissional_ausentes,2)}%\nfaltas de profissionais")
+
+    if st.button("Adicionar ao Banco de dados"):
+        records = df.to_dict(orient='records')
+
+        # 3. Write data to Firestore
+        collection_ref = db.collection('agendamentos') # Replace 'users' with your desired collection name
+
+        for record in records:
+            collection_ref.add(record) # Adds a new document with an auto-generated ID
+
 
     st.write(state)
 else:
